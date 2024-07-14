@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify, render_template
 import pandas as pd
 import pickle
@@ -9,9 +10,16 @@ app = Flask(__name__)
 # Setup logging
 logging.basicConfig(filename='app.log', level=logging.INFO)
 
+# Function to get the correct path for models
+def get_model_path(file_name):
+    if os.path.exists('/home/another-scheme-nuo/model/'):
+        return os.path.join('/home/another-scheme-nuo/model/', file_name)
+    else:
+        return os.path.join('model', file_name)
+
 # Load pre-trained models
 try:
-    with open('./model/decision_tree_model.pkl', 'rb') as file:
+    with open(get_model_path('decision_tree_model.pkl'), 'rb') as file:
         decision_tree_model = pickle.load(file)
     logging.info("Decision Tree model loaded successfully")
 except Exception as e:
@@ -19,7 +27,7 @@ except Exception as e:
     logging.error(f"Failed to load Decision Tree model: {str(e)}")
 
 try:
-    with open('./model/random_forest_model.pkl', 'rb') as file:
+    with open(get_model_path('random_forest_model.pkl'), 'rb') as file:
         random_forest_model = pickle.load(file)
     logging.info("Random Forest model loaded successfully")
 except Exception as e:
