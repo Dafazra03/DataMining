@@ -51,15 +51,16 @@ def predict():
         # Make prediction based on the selected model
         if model_name == 'Decision Tree' and decision_tree_model:
             prediction = decision_tree_model.predict(X)
-            accuracy = decision_tree_model.score(X, prediction) * 100  # Calculate accuracy and convert to percentage
+            accuracy = decision_tree_model.score(X, [prediction[0]]) * 100  # Calculate accuracy and convert to percentage
         elif model_name == 'Random Forest' and random_forest_model:
             prediction = random_forest_model.predict(X)
-            accuracy = random_forest_model.score(X, prediction) * 100  # Calculate accuracy and convert to percentage
+            accuracy = random_forest_model.score(X, [prediction[0]]) * 100  # Calculate accuracy and convert to percentage
         else:
             return jsonify({'error': 'Invalid model name or model not loaded'}), 400
-        
+
         # Convert prediction to descriptive result
         result = 'Penipuan' if prediction[0] == 1 else 'Bukan Penipuan'
+
         
         # Log the prediction request and result
         logging.info(f"Prediction request - Data: {data}, Model: {model_name}, Result: {result}, Accuracy: {accuracy}%")
