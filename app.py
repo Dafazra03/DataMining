@@ -31,8 +31,13 @@ def predict():
         # Get selected model from the request
         model_name = data.get('model_name')
         
-        # Define the features based on the selected model
-        features = ['ratio_to_median_purchase_price', 'online_order', 'distance_from_last_transaction', 'distance_from_home', 'repeat_retailer']
+        # Handle the features based on the selected model
+        if model_name == 'Decision Tree':
+            features = ['ratio_to_median_purchase_price', 'online_order', 'distance_from_last_transaction', 'distance_from_home', 'repeat_retailer']
+        elif model_name == 'Random Forest':
+            features = ['ratio_to_median_purchase_price', 'online_order', 'distance_from_last_transaction', 'distance_from_home', 'repeat_retailer']
+        else:
+            return jsonify({'error': 'Invalid model name'}), 400
         
         # Extract the required features
         X = pd.DataFrame([data], columns=features)
@@ -43,27 +48,23 @@ def predict():
         # Make prediction based on the selected model
         if model_name == 'Decision Tree':
             prediction = decision_tree_model.predict(X)
-            accuracy = decision_tree_model.score(X, prediction) * 100  # Calculate accuracy and convert to percentage
         elif model_name == 'Random Forest':
             prediction = random_forest_model.predict(X)
-            accuracy = random_forest_model.score(X, prediction) * 100  # Calculate accuracy and convert to percentage
-        else:
-            return jsonify({'error': 'Invalid model name'}), 400
         
         # Convert prediction to descriptive result
         result = 'Penipuan' if prediction[0] == 1 else 'Bukan Penipuan'
         
         # Log the prediction request and result
-        logging.info(f"Prediction request - Data: {data}, Model: {model_name}, Result: {result}, Accuracy: {accuracy}%")
+        logging.info(f"Prediction request - Data: {data}, Model: {model_name}, Result: {result}")
         
         # Return the result as a JSON response
-        return jsonify({'result': result, 'accuracy': f"{accuracy:.2f}%"})
+        return jsonify({'result': result})
 
     except Exception as e:
         # Log any exception that occurs
         logging.error(f"Prediction failed - Error: {str(e)}")
         return jsonify({'error': 'Prediction failed'}), 500
 
-
 if __name__ == '__main__':
     app.run(debug=True)
+
