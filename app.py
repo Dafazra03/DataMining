@@ -6,23 +6,25 @@ import logging
 # Initialize the Flask app
 app = Flask(__name__)
 
+# Setup logging
+logging.basicConfig(filename='app.log', level=logging.INFO)
+
 # Load pre-trained models
 try:
     with open('./model/decision_tree_model.pkl', 'rb') as file:
         decision_tree_model = pickle.load(file)
+    logging.info("Decision Tree model loaded successfully")
 except Exception as e:
     decision_tree_model = None
-    logging.error(f"Failed to load Decision Tree model: {e}")
+    logging.error(f"Failed to load Decision Tree model: {str(e)}")
 
 try:
     with open('./model/random_forest_model.pkl', 'rb') as file:
         random_forest_model = pickle.load(file)
+    logging.info("Random Forest model loaded successfully")
 except Exception as e:
     random_forest_model = None
-    logging.error(f"Failed to load Random Forest model: {e}")
-
-# Setup logging
-logging.basicConfig(filename='app.log', level=logging.INFO)
+    logging.error(f"Failed to load Random Forest model: {str(e)}")
 
 # Home route to render HTML form
 @app.route('/')
@@ -35,19 +37,19 @@ def predict():
     try:
         # Get the data from the request
         data = request.json
-        
+
         # Get selected model from the request
         model_name = data.get('model_name')
-        
+
         # Define the features based on the selected model
         features = ['ratio_to_median_purchase_price', 'online_order', 'distance_from_last_transaction', 'distance_from_home', 'repeat_retailer']
-        
+
         # Extract the required features
         X = pd.DataFrame([data], columns=features)
-        
+
         # Handle missing values
         X = X.fillna(-999).infer_objects(copy=False)
-        
+
         # Make prediction based on the selected model
         if model_name == 'Decision Tree' and decision_tree_model:
             prediction = decision_tree_model.predict(X)
@@ -61,10 +63,9 @@ def predict():
         # Convert prediction to descriptive result
         result = 'Penipuan' if prediction[0] == 1 else 'Bukan Penipuan'
 
-        
         # Log the prediction request and result
         logging.info(f"Prediction request - Data: {data}, Model: {model_name}, Result: {result}, Accuracy: {accuracy}%")
-        
+
         # Return the result as a JSON response
         return jsonify({'result': result, 'accuracy': f"{accuracy:.2f}%"})
 
@@ -72,7 +73,6 @@ def predict():
         # Log any exception that occurs
         logging.error(f"Prediction failed - Error: {str(e)}")
         return jsonify({'error': 'Prediction failed'}), 500
-
 
 if __name__ == '__main__':
     app.run(debug=True)
