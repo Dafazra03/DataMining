@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fraud Detection</title>
+    <link rel="stylesheet" href="../static/css/index.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Fraud Detection</h1>
+        <form id="prediction-form" class="form">
+            <div class="form-group">
+                <label for="ratio_to_median_purchase_price">Harga Official Store:</label>
+                <input type="number" id="ratio_to_median_purchase_price" name="ratio_to_median_purchase_price" step="any" required>
+            </div>
+            <div class="form-group">
+                <label for="online_order">0 Offline Store, 1 Online Store:</label>
+                <input type="number" id="online_order" name="online_order" min="0" max="1" required>
+            </div>
+            <div class="form-group">
+                <label for="distance_from_last_transaction">Jarak dari KM terakhir melakukan transaksi:</label>
+                <input type="number" id="distance_from_last_transaction" name="distance_from_last_transaction" step="any" required>
+            </div>
+            <div class="form-group">
+                <label for="distance_from_home">Jarak dari rumah(KM):</label>
+                <input type="number" id="distance_from_home" name="distance_from_home" step="any" required>
+            </div>
+            <div class="form-group">
+                <label for="repeat_retailer">Apakah sebelumnya sudah pernah melakukan pemesanan? 1 untuk iya dan 0 untuk tidak:</label>
+                <input type="number" id="repeat_retailer" name="repeat_retailer" min="0" max="1" required>
+            </div>
+            <div class="form-group">
+                <label for="model_name">Model:</label>
+                <select id="model_name" name="model_name" required>
+                    <option value="Decision Tree">Decision Tree</option>
+                    <option value="Random Forest">Random Forest</option>
+                </select>
+            </div>
+            <input type="submit" value="Predict" class="btn">
+        </form>
+        <div id="result" class="result"></div>
+        <div id="accuracy" class="accuracy"></div>
+    </div>
+    <script>
+        document.getElementById('prediction-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {};
+            formData.forEach(function(value, key){
+                data[key] = value;
+            });
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerText = `Result: ${data.result}`;
+                if (data.accuracy) {
+                    document.getElementById('accuracy').innerText = `Accuracy: ${data.accuracy}`;
+                } else {
+                    document.getElementById('accuracy').innerText = '';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('result').innerText = 'An error occurred. Please try again.';
+                document.getElementById('accuracy').innerText = '';
+            });
+        });
+    </script>
+</body>
+</html>
